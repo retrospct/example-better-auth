@@ -1,4 +1,4 @@
-.PHONY: help install dev build clean docker-up docker-down up down logs docker-logs db-migrate db-seed db-studio setup
+.PHONY: help install dev dev-api dev-ui build clean db-create db-drop db-migrate db-seed db-studio db-generate setup lint format
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -10,61 +10,20 @@ install: ## Install all dependencies
 	@echo "Installing dependencies..."
 	pnpm install
 
-docker-up: ## Start Docker services (PostgreSQL, API, and UI)
-	@echo "Starting Docker services..."
-	docker-compose -f docker-compose.dev.yml up -d
-	@echo "Waiting for services to be ready..."
-	@sleep 5
-
-docker-down: ## Stop Docker services
-	@echo "Stopping Docker services..."
-	docker-compose -f docker-compose.dev.yml down
-
-up: docker-up ## Alias for docker-up
-
-down: docker-down ## Alias for docker-down
-
-docker-logs: ## View Docker logs
-	docker-compose -f docker-compose.dev.yml logs -f
-
-logs: docker-logs ## Alias for docker-logs
-
-db-migrate: ## Run database migrations
-	@echo "Running database migrations..."
-	pnpm --filter @repo/db db:push
-
-db-seed: ## Seed the database
-	@echo "Seeding database..."
-	pnpm --filter @repo/db db:seed
-
-db-studio: ## Open Drizzle Studio
-	@echo "Opening Drizzle Studio..."
-	pnpm --filter @repo/db db:studio
-
-db-reset: docker-down docker-up ## Reset database (stop, start, migrate, seed)
-	@sleep 5
-	@$(MAKE) db-migrate
-	@$(MAKE) db-seed
-
-dev: docker-up ## Start all development servers (via Docker)
-	@echo "All services are running in Docker."
-	@echo "API: http://localhost:3001"
-	@echo "UI: http://localhost:3000"
-	@echo ""
-	@echo "To view logs: make logs"
-	@echo "To stop: make down"
-
-dev-local: ## Start development servers locally (not in Docker)
-	@echo "Starting development servers locally..."
+dev: ## Start all development servers
+	@echo "Starting all development servers..."
+	@echo "Make sure you have a .env file set up (copy from sample.env)"
 	pnpm dev
 
-dev-api: ## Start only the API server locally
-	@echo "Starting API server locally..."
-	pnpm --filter @repo/api dev
+dev-api: ## Start only the API server
+	@echo "Starting API server..."
+	@echo "Make sure you have a .env file set up (copy from sample.env)"
+	pnpm dev:api
 
-dev-ui: ## Start only the UI server locally
-	@echo "Starting UI server locally..."
-	pnpm --filter @repo/example-auth-ui dev
+dev-ui: ## Start only the UI server
+	@echo "Starting UI server..."
+	@echo "Make sure you have a .env file set up (copy from sample.env)"
+	pnpm dev:ui
 
 build: ## Build all packages
 	@echo "Building all packages..."
@@ -79,17 +38,52 @@ clean: ## Clean build artifacts and node_modules
 	rm -rf apps/*/dist
 	rm -rf .turbo
 
-setup: install docker-up ## Full setup: install dependencies and start services
-	@sleep 5
-	@$(MAKE) db-migrate
-	@$(MAKE) db-seed
+db-create: ## Create the database
+	@echo "Creating database..."
+	pnpm db:create
+
+db-drop: ## Drop the database
+	@echo "Dropping database..."
+	pnpm db:drop
+
+db-generate: ## Generate database migrations
+	@echo "Generating database migrations..."
+	pnpm db:generate
+
+db-migrate: ## Run database migrations
+	@echo "Running database migrations..."
+	pnpm db:migrate
+
+db-push: ## Push database schema changes (dev only)
+	@echo "Pushing database schema changes..."
+	pnpm db:push
+
+db-seed: ## Seed the database
+	@echo "Seeding database..."
+	pnpm db:seed
+
+db-studio: ## Open Drizzle Studio
+	@echo "Opening Drizzle Studio..."
+	pnpm db:studio
+
+setup: install ## Full setup: install dependencies, run migrations, and seed database
 	@echo ""
-	@echo "Setup complete! All services are running in Docker."
+	@if [ ! -f .env ]; then \
+		echo "Creating .env file from sample.env..."; \
+		cp sample.env .env; \
+		echo "Please update .env with your database configuration before continuing."; \
+		exit 1; \
+	fi
+	@echo "Running database migrations..."
+	pnpm db:push
+	@echo "Seeding database..."
+	pnpm db:seed
+	@echo ""
+	@echo "Setup complete!"
 	@echo "API: http://localhost:3001"
 	@echo "UI: http://localhost:3000"
 	@echo ""
-	@echo "To view logs: make logs"
-	@echo "To stop services: make down"
+	@echo "To start development servers: make dev"
 
 lint: ## Run linting
 	@echo "Running linter..."
@@ -98,4 +92,3 @@ lint: ## Run linting
 format: ## Format code
 	@echo "Formatting code..."
 	pnpm format
-

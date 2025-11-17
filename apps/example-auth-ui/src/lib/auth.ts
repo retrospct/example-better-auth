@@ -14,3 +14,12 @@ export const {
   useSession,
 } = authClient;
 
+// Re-export server-side utilities
+export { getServerSession } from "./auth.server";
+
+// Re-export server actions
+export { signInAction } from "./signin";
+export { signUpAction } from "./signup";
+
+// Re-export types
+export type { AuthActionResult } from "./auth.types";

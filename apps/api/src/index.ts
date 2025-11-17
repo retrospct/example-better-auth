@@ -2,6 +2,9 @@ import { serve } from "@hono/node-server";
 import { cors } from "hono/cors";
 import { Hono } from "hono";
 import { auth } from "./auth";
+import * as dotenv from "dotenv";
+
+dotenv.config({ path: "../../.env" });
 
 const app = new Hono();
 
@@ -21,6 +24,24 @@ app.get("/health", (c) => {
   return c.json({ status: "ok" });
 });
 
+// Custom session endpoint that uses better-auth's server-side API
+app.get("/api/session", async (c) => {
+  try {
+    const session = await auth.api.getSession({
+      headers: c.req.raw.headers,
+    });
+
+    if (!session) {
+      return c.json({ session: null }, 200);
+    }
+
+    return c.json({ session }, 200);
+  } catch (error) {
+    console.error("Error getting session:", error);
+    return c.json({ error: "Failed to get session" }, 500);
+  }
+});
+
 // Mount better-auth routes
 app.all("/api/auth/*", async (c) => {
   return auth.handler(c.req.raw);
@@ -33,6 +54,5 @@ console.log(`Server is running on port ${port}`);
 serve({
   fetch: app.fetch,
   port,
-  hostname: '0.0.0.0',
+  hostname: "0.0.0.0",
 });
-

@@ -3,13 +3,27 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "init": "pnpm install && cp sample.env .env && pnpm db:create && pnpm db:push",
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:api": "pnpm --filter @repo/api dev",
+    "dev:ui": "pnpm --filter @repo/example-auth-ui dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "db:create": "pnpm dlx tsx scripts/create-db.js",
+    "db:drop": "pnpm dlx tsx scripts/drop-db.js",
+    "db:generate": "pnpm --filter @repo/db db:generate",
+    "db:push": "pnpm --filter @repo/db db:push",
+    "db:migrate": "pnpm --filter @repo/db db:migrate",
+    "db:studio": "pnpm --filter @repo/db db:studio",
+    "db:seed": "pnpm --filter @repo/db db:seed",
+    "setup": "pnpm install && pnpm db:push && pnpm db:seed",
+    "sigh": "pnpm dlx kill-port 3000 3001"
   },
   "devDependencies": {
+    "postgres": "^3.4.0",
     "prettier": "^3.0.0",
+    "tsx": "^4.7.0",
     "turbo": "^2.0.0"
   },
   "packageManager": "pnpm@8.15.0",

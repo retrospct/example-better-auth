@@ -2,7 +2,11 @@
  * Get the API URL for server-side requests
  */
 export function getApiUrl(): string {
-  return process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  return (
+    process.env.API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:3001"
+  );
 }
 
 /**
@@ -15,7 +19,7 @@ async function fetchWithRetry(
   delay = 1000
 ): Promise<Response> {
   let lastError: Error | null = null;
-  
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const response = await fetch(url, options);
@@ -32,7 +36,7 @@ async function fetchWithRetry(
       throw lastError;
     }
   }
-  
+
   throw lastError || new Error("Failed to fetch after retries");
 }
 
@@ -59,10 +63,12 @@ export async function getCookieHeader(): Promise<string> {
 /**
  * Parse and set cookies from API response headers
  */
-export async function setCookiesFromResponse(response: Response): Promise<void> {
+export async function setCookiesFromResponse(
+  response: Response
+): Promise<void> {
   const setCookieHeaders = response.headers.getSetCookie();
   console.log("[setCookiesFromResponse] Set-Cookie headers:", setCookieHeaders);
-  
+
   if (!setCookieHeaders || setCookieHeaders.length === 0) {
     console.log("[setCookiesFromResponse] No Set-Cookie headers found");
     return;
@@ -74,17 +80,25 @@ export async function setCookiesFromResponse(response: Response): Promise<void> 
 
   for (const cookieString of setCookieHeaders) {
     console.log("[setCookiesFromResponse] Parsing cookie:", cookieString);
-    
+
     // Parse cookie string (format: name=value; attr1=val1; attr2=val2)
     const [nameValue, ...attributes] = cookieString.split("; ");
     const [name, value] = nameValue.split("=");
 
     if (!name || !value) {
-      console.log("[setCookiesFromResponse] Skipping invalid cookie:", cookieString);
+      console.log(
+        "[setCookiesFromResponse] Skipping invalid cookie:",
+        cookieString
+      );
       continue;
     }
 
-    console.log("[setCookiesFromResponse] Setting cookie:", name, "=", value.substring(0, 20) + "...");
+    console.log(
+      "[setCookiesFromResponse] Setting cookie:",
+      name,
+      "=",
+      value.substring(0, 20) + "..."
+    );
 
     // Parse attributes
     const cookieOptions: {
@@ -105,7 +119,10 @@ export async function setCookiesFromResponse(response: Response): Promise<void> 
       } else if (keyLower === "secure") {
         cookieOptions.secure = true;
       } else if (keyLower === "samesite") {
-        cookieOptions.sameSite = val?.toLowerCase() as "strict" | "lax" | "none";
+        cookieOptions.sameSite = val?.toLowerCase() as
+          | "strict"
+          | "lax"
+          | "none";
       } else if (keyLower === "max-age") {
         cookieOptions.maxAge = parseInt(val, 10);
       } else if (keyLower === "path") {
@@ -126,7 +143,7 @@ export async function setCookiesFromResponse(response: Response): Promise<void> 
     console.log("[setCookiesFromResponse] Cookie options:", cookieOptions);
     cookieStore.set(name, value, cookieOptions);
   }
-  
+
   console.log("[setCookiesFromResponse] Cookies set successfully");
 }
 
@@ -137,7 +154,8 @@ export function parseApiError(data: any): {
   error: string;
   fieldErrors?: Record<string, string>;
 } {
-  const errorMessage = data?.error?.message || data?.message || "An error occurred";
+  const errorMessage =
+    data?.error?.message || data?.message || "An error occurred";
 
   // Check for field-specific errors in the response
   const apiFieldErrors: Record<string, string> = {};
@@ -147,7 +165,8 @@ export function parseApiError(data: any): {
 
   return {
     error: errorMessage,
-    fieldErrors: Object.keys(apiFieldErrors).length > 0 ? apiFieldErrors : undefined,
+    fieldErrors:
+      Object.keys(apiFieldErrors).length > 0 ? apiFieldErrors : undefined,
   };
 }
 
@@ -160,4 +179,3 @@ export async function apiRequest(
 ): Promise<Response> {
   return fetchWithRetry(url, options);
 }
-

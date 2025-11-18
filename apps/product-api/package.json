@@ -1,5 +1,5 @@
 {
-  "name": "@repo/api",
+  "name": "@repo/product-api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -11,7 +11,6 @@
   "dependencies": {
     "@hono/node-server": "^1.8.0",
     "@repo/db": "workspace:*",
-    "better-auth": "^1.0.0",
     "dotenv": "^16.3.0",
     "hono": "^4.0.0"
   },
@@ -21,4 +20,3 @@
     "typescript": "^5.3.0"
   }
 }
-

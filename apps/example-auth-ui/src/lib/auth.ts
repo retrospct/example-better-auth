@@ -7,12 +7,7 @@ export const authClient = createAuthClient({
   },
 });
 
-export const {
-  signIn,
-  signUp,
-  signOut,
-  useSession,
-} = authClient;
+export const { signIn, signUp, signOut, useSession } = authClient;
 
 // Re-export server-side utilities
 export { getServerSession } from "./auth.server";
@@ -20,6 +15,7 @@ export { getServerSession } from "./auth.server";
 // Re-export server actions
 export { signInAction } from "./signin";
 export { signUpAction } from "./signup";
+export { signOutAction } from "./signout";
 
 // Re-export types
 export type { AuthActionResult } from "./auth.types";

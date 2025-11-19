@@ -27,15 +27,21 @@ app.get("/health", (c) => {
 // Custom session endpoint that uses better-auth's server-side API
 app.get("/api/session", async (c) => {
   try {
-    const session = await auth.api.getSession({
+    const sessionData = await auth.api.getSession({
       headers: c.req.raw.headers,
     });
 
-    if (!session) {
-      return c.json({ session: null }, 200);
+    if (!sessionData) {
+      return c.json({ session: null, user: null }, 200);
     }
 
-    return c.json({ session }, 200);
+    return c.json(
+      {
+        session: sessionData.session,
+        user: sessionData.user,
+      },
+      200
+    );
   } catch (error) {
     console.error("Error getting session:", error);
     return c.json({ error: "Failed to get session" }, 500);

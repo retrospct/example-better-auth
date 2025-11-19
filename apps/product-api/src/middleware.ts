@@ -9,7 +9,7 @@ interface SessionData {
   session: {
     token: string;
     expiresAt: Date;
-  };
+  } | null;
 }
 
 /**
@@ -60,8 +60,13 @@ export async function sessionMiddleware(c: Context, next: Next) {
 
     const sessionData = (await response.json()) as SessionData;
 
+    // Check if session is null or invalid
+    if (!sessionData.session || !sessionData.user) {
+      return c.json({ error: "Invalid or expired session" }, 401);
+    }
+
     // Attach session data to context for use in route handlers
-    c.set("session", sessionData);
+    c.set("session", sessionData.session);
     c.set("user", sessionData.user);
 
     await next();

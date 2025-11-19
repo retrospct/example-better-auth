@@ -1,20 +1,9 @@
-import { headers } from "next/headers";
-
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { authClient, getServerSession } from "@/lib/auth";
+import { getServerSession, signOutAction } from "@/lib/auth";
+import { ProductApiButton } from "@/components/product-api-button";
 
 export default async function Home() {
-  const session = await getServerSession();
-
-  console.log("session");
-  console.log(session);
-
-  async function handleSignOut() {
-    "use server";
-    await authClient.signOut();
-    redirect("/");
-  }
+  const { session } = await getServerSession();
 
   if (session) {
     return (
@@ -23,8 +12,10 @@ export default async function Home() {
           <h1 className="text-4xl font-bold mb-8">Example Auth UI</h1>
           <div className="space-y-4">
             <p className="text-lg">You're signed in.</p>
+
+            <ProductApiButton />
           </div>
-          <form action={handleSignOut}>
+          <form action={signOutAction}>
             <button
               type="submit"
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
@@ -45,7 +36,7 @@ export default async function Home() {
         {session ? (
           <div className="space-y-4">
             <p className="text-lg">You're signed in.</p>
-            <form action={handleSignOut}>
+            <form action={signOutAction}>
               <button
                 type="submit"
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
